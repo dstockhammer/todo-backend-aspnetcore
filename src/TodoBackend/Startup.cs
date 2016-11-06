@@ -30,7 +30,8 @@ namespace TodoBackend
 
             app.Run(async (context) =>
             {
-                await context.Response.WriteAsync("Hello World!");
+                var hostName = Environment.GetEnvironmentVariable("COMPUTERNAME") ?? Environment.GetEnvironmentVariable("HOSTNAME");
+                await context.Response.WriteAsync($"Hello from {hostName}");
             });
         }
     }

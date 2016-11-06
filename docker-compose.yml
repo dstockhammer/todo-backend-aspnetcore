@@ -1,0 +1,37 @@
+version: '2'
+
+services:
+  api:
+    image: todobackend-api
+    build:
+      context: ./src/TodoBackend
+      dockerfile: Dockerfile
+    environment:
+      SERVICE_NAME: api
+    ports:
+      - "5000"
+
+  loadbalancer:
+    image: nginx
+    build:
+      context: ./nginx
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+
+  consul:
+    image: consul
+    ports:
+      - "8300:8300"
+      - "8400:8400"
+      - "8500:8500"
+      - "8600:53/udp"
+
+  registrator:
+    image: gliderlabs/registrator
+    depends_on:
+      - consul
+    command: -internal -resync 600 consul://consul:8500
+    volumes:
+      - "/var/run/docker.sock:/tmp/docker.sock"
