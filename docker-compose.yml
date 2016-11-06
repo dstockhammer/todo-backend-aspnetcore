@@ -4,12 +4,13 @@ services:
   api:
     image: todobackend-api
     build:
-      context: ./src/TodoBackend
-      dockerfile: Dockerfile
+      context: ./src/TodoBackend.Api
     environment:
       SERVICE_NAME: api
     ports:
       - "5000"
+    links:
+      - elk
 
   loadbalancer:
     image: nginx
@@ -35,3 +36,10 @@ services:
     command: -internal -resync 600 consul://consul:8500
     volumes:
       - "/var/run/docker.sock:/tmp/docker.sock"
+
+  elk:
+    image: sebp/elk
+    ports:
+      - "5601:5601"
+      - "9200:9200"
+      - "5044:5044"
