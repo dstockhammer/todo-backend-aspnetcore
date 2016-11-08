@@ -19,7 +19,10 @@ namespace TodoBackend.Api.Controllers
         {
             _logger.Information("Hello there, this is an example log with a random number: {number}", new Random().Next());
 
-            var hostName = Environment.GetEnvironmentVariable("COMPUTERNAME") ?? Environment.GetEnvironmentVariable("HOSTNAME");
+            var hostName = Environment.GetEnvironmentVariable("DYNO")
+                ?? Environment.GetEnvironmentVariable("COMPUTERNAME")
+                ?? Environment.GetEnvironmentVariable("HOSTNAME");
+
             return Ok($"Hello from {hostName}");
         }
     }
