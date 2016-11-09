@@ -4,12 +4,12 @@ using Serilog;
 
 namespace TodoBackend.Api.Controllers
 {
-    [Route("")]
-    public class HomeController : ControllerBase
+    [Route("hello")]
+    public class HelloController : ControllerBase
     {
         private readonly ILogger _logger;
 
-        public HomeController(ILogger logger)
+        public HelloController(ILogger logger)
         {
             _logger = logger;
         }

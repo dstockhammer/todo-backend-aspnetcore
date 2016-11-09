@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 using Serilog;
 
 namespace TodoBackend.Api
@@ -33,7 +36,14 @@ namespace TodoBackend.Api
             services.AddSingleton(Log.Logger);
 
             services.AddCors();
-            services.AddMvcCore();
+            services.AddMvcCore()
+                .AddJsonFormatters(opt =>
+                {
+                    opt.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                    opt.Converters.Add(new StringEnumConverter());
+                    opt.Formatting = Formatting.Indented;
+                    opt.NullValueHandling = NullValueHandling.Ignore;
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
