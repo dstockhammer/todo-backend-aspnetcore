@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,12 +15,13 @@ using Newtonsoft.Json.Serialization;
 using paramore.brighter.commandprocessor;
 using Serilog;
 using TodoBackend.Api.Infrastructure;
-using TodoBackend.Core;
 using TodoBackend.Core.Ports.Commands.Handlers;
 using TodoBackend.Core.Ports.Queries.Handlers;
 using SimpleInjector;
 using SimpleInjector.Integration.AspNetCore;
 using SimpleInjector.Integration.AspNetCore.Mvc;
+using TodoBackend.Api.Data;
+using TodoBackend.Core.Domain;
 
 namespace TodoBackend.Api
 {
@@ -27,6 +29,7 @@ namespace TodoBackend.Api
     {
         private readonly Container _container;
         private readonly IConfigurationRoot _configuration;
+        private readonly string _connectionString;
 
         public Startup(IHostingEnvironment env)
         {
@@ -35,6 +38,8 @@ namespace TodoBackend.Api
                 .SetBasePath(env.ContentRootPath)
                 .AddEnvironmentVariables()
                 .Build();
+
+            _connectionString = @"Server=localhost;Database=TodoBackend;User Id=TodoBackendOwner;Password=P@ssword1;";
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -47,8 +52,8 @@ namespace TodoBackend.Api
                 .Enrich.WithMachineName()
                 .CreateLogger();
 
-            services.AddSingleton<IControllerActivator>(new SimpleInjectorControllerActivator(_container));
-            services.AddSingleton<IViewComponentActivator>(new SimpleInjectorViewComponentActivator(_container));
+            // required for migration
+            services.AddDbContext<TodoContext>(opt => opt.UseSqlServer(_connectionString));
 
             services.AddCors();
             services.AddMvcCore()
@@ -59,6 +64,9 @@ namespace TodoBackend.Api
                     opt.Formatting = Formatting.Indented;
                     opt.NullValueHandling = NullValueHandling.Ignore;
                 });
+
+            services.AddSingleton<IControllerActivator>(new SimpleInjectorControllerActivator(_container));
+            services.AddSingleton<IViewComponentActivator>(new SimpleInjectorViewComponentActivator(_container));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -66,7 +74,7 @@ namespace TodoBackend.Api
         {
             loggerFactory.AddSerilog(Log.Logger);
 
-            InitializeContainer(app);
+            InitializeContainer(app, loggerFactory);
 
             if (env.IsDevelopment())
             {
@@ -77,16 +85,22 @@ namespace TodoBackend.Api
             app.UseMvc();
         }
 
-        private void InitializeContainer(IApplicationBuilder app)
+        private void InitializeContainer(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             app.UseSimpleInjectorAspNetRequestScoping(_container);
 
             _container.Options.DefaultScopedLifestyle = new AspNetRequestLifestyle();
 
             _container.RegisterMvcControllers(app);
-
             _container.RegisterSingleton(Log.Logger);
-            _container.RegisterSingleton<DummyRepository>();
+
+            _container.RegisterSingleton(
+                new DbContextOptionsBuilder<TodoContext>()
+                .UseSqlServer(_connectionString)
+                .UseLoggerFactory(loggerFactory)
+                .Options);
+
+            _container.Register<IUnitOfWorkManager, EfUnitOfWorkManager>();
 
             ConfigureBrighter();
             ConfigureDarker();

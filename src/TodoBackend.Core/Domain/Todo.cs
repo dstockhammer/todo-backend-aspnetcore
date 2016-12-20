@@ -1,11 +1,19 @@
 ﻿namespace TodoBackend.Core.Domain
 {
-    public class Todo
+    public class Todo : IEntity
     {
-        public int Id { get; }
+        // todo
+        private int SequenceId { get; set; }
+
+        public int Id { get; private set; }
         public string Title { get; private set; }
         public bool Completed { get; private set; }
         public int? Order { get; private set; }
+
+        // todo
+        private Todo()
+        {
+        }
 
         public Todo(int id, string title, bool completed, int? order)
         {

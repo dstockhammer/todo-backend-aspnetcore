@@ -14,7 +14,7 @@ namespace TodoBackend.Core.Ports.Commands.Messages
             : base(Guid.NewGuid())
         {
             TodoId = todoId;
-            Title = title;
+            Title = title ?? string.Empty;
             Completed = completed;
             Order = order;
         }
