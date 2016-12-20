@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using paramore.brighter.commandprocessor;
-using paramore.brighter.commandprocessor.logging.Attributes;
+using TodoBackend.Core.BrighterFix;
 using TodoBackend.Core.Ports.Commands.Messages;
 
 namespace TodoBackend.Core.Ports.Commands.Handlers
@@ -15,7 +15,7 @@ namespace TodoBackend.Core.Ports.Commands.Handlers
             _repository = repository;
         }
 
-        [RequestLoggingAsync(1, HandlerTiming.Before)]
+        [RequestLoggingAsync2(1, HandlerTiming.Before)]
         public override async Task<UpdateTodo> HandleAsync(UpdateTodo command, CancellationToken? ct = null)
         {
             var todo = await _repository.GetAsync(command.TodoId);

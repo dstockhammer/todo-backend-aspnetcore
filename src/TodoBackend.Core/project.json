@@ -4,7 +4,8 @@
   "dependencies": {
     "Darker": "0.5.0",
     "NETStandard.Library": "1.6.1",
-    "paramore.brighter.commandprocessor": "7.0.63-beta"
+    "paramore.brighter.commandprocessor": "7.0.63-beta",
+    "Serilog": "2.4.0-dev-00767"
   },
 
   "frameworks": {

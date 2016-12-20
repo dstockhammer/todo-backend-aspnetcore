@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Darker;
+using Darker.Attributes;
 using TodoBackend.Core.Ports.Queries.Messages;
 
 namespace TodoBackend.Core.Ports.Queries.Handlers
@@ -13,7 +14,7 @@ namespace TodoBackend.Core.Ports.Queries.Handlers
             _repository = repository;
         }
 
-        //[RequestLogging(1)]
+        [RequestLogging(1)]
         public override async Task<GetTodo.Result> ExecuteAsync(GetTodo request)
         {
             var todo = await _repository.GetAsync(request.TodoId);

@@ -22,6 +22,8 @@
     "Serilog.Extensions.Logging": "1.4.0-dev-10136",
     "Serilog.Sinks.Literate": "2.1.0-dev-00034",
     "Serilog.Sinks.Seq": "3.1.2-dev-00100",
+    "SimpleInjector": "3.3.2",
+    "SimpleInjector.Integration.AspNetCore.Mvc": "3.3.0",
     "TodoBackend.Core": "1.0.0-*"
   },
 

@@ -3,6 +3,8 @@ using Darker;
 using Darker.Builder;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,15 +17,20 @@ using TodoBackend.Api.Infrastructure;
 using TodoBackend.Core;
 using TodoBackend.Core.Ports.Commands.Handlers;
 using TodoBackend.Core.Ports.Queries.Handlers;
+using SimpleInjector;
+using SimpleInjector.Integration.AspNetCore;
+using SimpleInjector.Integration.AspNetCore.Mvc;
 
 namespace TodoBackend.Api
 {
     public class Startup
     {
+        private readonly Container _container;
         private readonly IConfigurationRoot _configuration;
 
         public Startup(IHostingEnvironment env)
         {
+            _container = new Container();
             _configuration = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddEnvironmentVariables()
@@ -40,7 +47,8 @@ namespace TodoBackend.Api
                 .Enrich.WithMachineName()
                 .CreateLogger();
 
-            services.AddSingleton(Log.Logger);
+            services.AddSingleton<IControllerActivator>(new SimpleInjectorControllerActivator(_container));
+            services.AddSingleton<IViewComponentActivator>(new SimpleInjectorViewComponentActivator(_container));
 
             services.AddCors();
             services.AddMvcCore()
@@ -51,17 +59,14 @@ namespace TodoBackend.Api
                     opt.Formatting = Formatting.Indented;
                     opt.NullValueHandling = NullValueHandling.Ignore;
                 });
-
-            services.AddSingleton<DummyRepository>();
-
-            ConfigureBrighter(services);
-            ConfigureDarker(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddSerilog(Log.Logger);
+
+            InitializeContainer(app);
 
             if (env.IsDevelopment())
             {
@@ -72,9 +77,26 @@ namespace TodoBackend.Api
             app.UseMvc();
         }
 
-        private static void ConfigureBrighter(IServiceCollection services)
+        private void InitializeContainer(IApplicationBuilder app)
         {
-            var config = new AspNetDependencyInjectionHandlerConfig(services);
+            app.UseSimpleInjectorAspNetRequestScoping(_container);
+
+            _container.Options.DefaultScopedLifestyle = new AspNetRequestLifestyle();
+
+            _container.RegisterMvcControllers(app);
+
+            _container.RegisterSingleton(Log.Logger);
+            _container.RegisterSingleton<DummyRepository>();
+
+            ConfigureBrighter();
+            ConfigureDarker();
+
+            _container.Verify();
+        }
+
+        private void ConfigureBrighter()
+        {
+            var config = new SimpleInjectorHandlerConfig(_container);
             config.RegisterSubscribersFromAssembly(typeof(CreateTodoHandler).GetTypeInfo().Assembly);
             config.RegisterDefaultHandlers();
 
@@ -85,12 +107,12 @@ namespace TodoBackend.Api
                 .RequestContextFactory(new paramore.brighter.commandprocessor.InMemoryRequestContextFactory())
                 .Build();
 
-            services.AddSingleton<IAmACommandProcessor>(commandProcessor);
+            _container.RegisterSingleton<IAmACommandProcessor>(commandProcessor);
         }
 
-        private static void ConfigureDarker(IServiceCollection services)
+        private void ConfigureDarker()
         {
-            var handlerConfiguration = new AspNetDependencyInjectionHandlerConfigurationBuilder(services)
+            var handlerConfiguration = new SimpleInjectorHandlerConfigurationBuilder(_container)
                 .WithQueriesAndHandlersFromAssembly(typeof(GetTodoHandler).GetTypeInfo().Assembly)
                 .Build();
 
@@ -100,7 +122,7 @@ namespace TodoBackend.Api
                 .InMemoryRequestContextFactory()
                 .Build();
 
-            services.AddSingleton<IQueryProcessor>(queryProcessor);
+            _container.RegisterSingleton<IQueryProcessor>(queryProcessor);
         }
     }
 }
