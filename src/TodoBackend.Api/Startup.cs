@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Reflection;
+using Darker;
+using Darker.Builder;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,7 +9,12 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
+using paramore.brighter.commandprocessor;
 using Serilog;
+using TodoBackend.Api.Infrastructure;
+using TodoBackend.Core;
+using TodoBackend.Core.Ports.Commands.Handlers;
+using TodoBackend.Core.Ports.Queries.Handlers;
 
 namespace TodoBackend.Api
 {
@@ -28,8 +36,7 @@ namespace TodoBackend.Api
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
                 .WriteTo.LiterateConsole()
-                //.WriteTo.RollingFile("/var/log/todobackend/api-{Date}.log")
-                .WriteTo.Elasticsearch("http://elk:9200") // todo: writing to elastic directly, because filebeat doesn't work :(
+                .WriteTo.Seq("http://localhost:5341")
                 .Enrich.WithMachineName()
                 .CreateLogger();
 
@@ -44,6 +51,11 @@ namespace TodoBackend.Api
                     opt.Formatting = Formatting.Indented;
                     opt.NullValueHandling = NullValueHandling.Ignore;
                 });
+
+            services.AddSingleton<DummyRepository>();
+
+            ConfigureBrighter(services);
+            ConfigureDarker(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -58,6 +70,37 @@ namespace TodoBackend.Api
 
             app.UseCors(opts => opts.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             app.UseMvc();
+        }
+
+        private static void ConfigureBrighter(IServiceCollection services)
+        {
+            var config = new AspNetDependencyInjectionHandlerConfig(services);
+            config.RegisterSubscribersFromAssembly(typeof(CreateTodoHandler).GetTypeInfo().Assembly);
+            config.RegisterDefaultHandlers();
+
+            var commandProcessor = CommandProcessorBuilder.With()
+                .Handlers(config.HandlerConfiguration)
+                .DefaultPolicy()
+                .NoTaskQueues()
+                .RequestContextFactory(new paramore.brighter.commandprocessor.InMemoryRequestContextFactory())
+                .Build();
+
+            services.AddSingleton<IAmACommandProcessor>(commandProcessor);
+        }
+
+        private static void ConfigureDarker(IServiceCollection services)
+        {
+            var handlerConfiguration = new AspNetDependencyInjectionHandlerConfigurationBuilder(services)
+                .WithQueriesAndHandlersFromAssembly(typeof(GetTodoHandler).GetTypeInfo().Assembly)
+                .Build();
+
+            var queryProcessor = QueryProcessorBuilder.With()
+                .Handlers(handlerConfiguration)
+                .DefaultPolicies()
+                .InMemoryRequestContextFactory()
+                .Build();
+
+            services.AddSingleton<IQueryProcessor>(queryProcessor);
         }
     }
 }

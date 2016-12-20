@@ -1,38 +1,72 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Linq;
+using System.Threading.Tasks;
+using Darker;
 using Microsoft.AspNetCore.Mvc;
+using paramore.brighter.commandprocessor;
 using TodoBackend.Api.Views;
+using TodoBackend.Core.Ports.Commands.Messages;
+using TodoBackend.Core.Ports.Queries.Messages;
 
 namespace TodoBackend.Api.Controllers
 {
     [Route("")]
     public class TodoController : ControllerBase
     {
-        private static readonly ConcurrentDictionary<int, TodoView> _todos = new ConcurrentDictionary<int, TodoView>();
+        private readonly IAmACommandProcessor _commandProcessor;
+        private readonly IQueryProcessor _queryProcessor;
+
+        public TodoController(IAmACommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        {
+            _commandProcessor = commandProcessor;
+            _queryProcessor = queryProcessor;
+        }
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            return Ok(_todos.Values);
+            var result = await _queryProcessor.ExecuteAsync(new GetAllTodos());
+
+            var views = result.Todos.Select(t => new TodoView
+            {
+                Id = t.Id,
+                Title = t.Title,
+                Completed = t.Completed,
+                Order = t.Order,
+                Url = GetUri(t.Id)
+            });
+
+            return Ok(views);
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            if (!_todos.ContainsKey(id))
+            var result = await _queryProcessor.ExecuteAsync(new GetTodo(id));
+            if (result.Todo == null)
                 return NotFound();
 
-            return Ok(_todos[id]);
+            var view = new TodoView
+            {
+                Id = result.Todo.Id,
+                Title = result.Todo.Title,
+                Completed = result.Todo.Completed,
+                Order = result.Todo.Order,
+                Url = GetUri(result.Todo.Id)
+            };
+
+            return Ok(view);
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody]TodoView view)
+        public async Task<IActionResult> Post([FromBody]TodoView view)
         {
-            view.Id = Math.Abs(Guid.NewGuid().GetHashCode());
-            view.Url = GetUri(view.Id);
+            var id = Math.Abs(Guid.NewGuid().GetHashCode());
+            await _commandProcessor.SendAsync(new CreateTodo(id, view.Title, view.Completed, view.Order));
 
-            _todos.TryAdd(view.Id, view);
+            // todo: yeah, this is a hack
+            view.Id = id;
+            view.Url = GetUri(id);
 
             HttpContext.Response.Headers.Add("Location", view.Url);
 
@@ -40,34 +74,29 @@ namespace TodoBackend.Api.Controllers
         }
 
         [HttpPatch("{id}")]
-        public IActionResult Patch(int id, [FromBody]TodoView view)
+        public async Task<IActionResult> Patch(int id, [FromBody]TodoView view)
         {
-            if (!_todos.ContainsKey(id))
-                return NotFound();
+            await _commandProcessor.SendAsync(new UpdateTodo(id, view.Title, view.Completed, view.Order));
 
-            _todos[id].Title = view.Title;
-            _todos[id].Completed = view.Completed;
-            _todos[id].Order = view.Order;
+            // todo: yeah, this is a hack
+            view.Id = id;
+            view.Url = GetUri(id);
 
-            return Ok(_todos[id]);
+            return Ok(view);
         }
 
         [HttpDelete]
-        public IActionResult Delete()
+        public async Task<IActionResult> Delete()
         {
-            _todos.Clear();
+            await _commandProcessor.SendAsync(new DeleteAllTodos());
 
             return Ok();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (!_todos.ContainsKey(id))
-                return NotFound();
-
-            TodoView todo;
-            _todos.TryRemove(id, out todo);
+            await _commandProcessor.SendAsync(new DeleteTodo(id));
 
             return Ok();
         }
@@ -75,7 +104,6 @@ namespace TodoBackend.Api.Controllers
         private string GetUri(int id)
         {
             var hostAndPort = HttpContext.Request.Host.Value.Split(':');
-
 
             var builder = new UriBuilder
             {
