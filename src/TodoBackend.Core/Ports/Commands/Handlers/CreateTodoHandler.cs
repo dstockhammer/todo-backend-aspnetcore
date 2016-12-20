@@ -20,7 +20,7 @@ namespace TodoBackend.Core.Ports.Commands.Handlers
         public override async Task<CreateTodo> HandleAsync(CreateTodo command, CancellationToken? ct = null)
         {
             using (var uow = _unitOfWorkManager.Start())
-            using (var tx = await uow.BeginTransactionAsync(ct ?? default(CancellationToken)))
+            using (var tx = await uow.BeginTransactionAsync(cancellationToken: ct ?? default(CancellationToken)))
             {
                 var todo = new Todo(command.TodoId, command.Title, command.Completed, command.Order);
                 uow.Add(todo);

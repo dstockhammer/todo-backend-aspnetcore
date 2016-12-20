@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Data;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -36,9 +37,9 @@ namespace TodoBackend.Api.Data
             return _context.Set<T>();
         }
 
-        public async Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ITransaction> BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var tx = await _context.Database.BeginTransactionAsync(cancellationToken);
+            var tx = await _context.Database.BeginTransactionAsync(isolationLevel, cancellationToken);
             return new EfTransaction(_context, tx);
         }
 

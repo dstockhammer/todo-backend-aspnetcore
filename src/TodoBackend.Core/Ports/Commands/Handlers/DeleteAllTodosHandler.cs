@@ -21,7 +21,7 @@ namespace TodoBackend.Core.Ports.Commands.Handlers
         public override async Task<DeleteAllTodos> HandleAsync(DeleteAllTodos command, CancellationToken? ct = null)
         {
             using (var uow = _unitOfWorkManager.Start())
-            using (var tx = await uow.BeginTransactionAsync(ct ?? default(CancellationToken)))
+            using (var tx = await uow.BeginTransactionAsync(cancellationToken: ct ?? default(CancellationToken)))
             {
                 foreach (var todo in await uow.AsQueryable<Todo>().ToListAsync(ct ?? default(CancellationToken)))
                 {

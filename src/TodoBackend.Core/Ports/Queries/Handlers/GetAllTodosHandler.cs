@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Darker;
 using Darker.Attributes;
@@ -17,11 +18,13 @@ namespace TodoBackend.Core.Ports.Queries.Handlers
         }
 
         [RequestLogging(1)]
-        public override async Task<GetAllTodos.Result> ExecuteAsync(GetAllTodos request)
+        public override async Task<GetAllTodos.Result> ExecuteAsync(GetAllTodos request, CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var uow = _unitOfWorkManager.Start())
             {
-                var todos = await uow.AsQueryable<Todo>().ToListAsync();
+                //await Task.Delay(5000, cancellationToken);
+
+                var todos = await uow.AsQueryable<Todo>().ToListAsync(cancellationToken);
                 return new GetAllTodos.Result(todos);
             }
         }
