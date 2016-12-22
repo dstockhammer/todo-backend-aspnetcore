@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using paramore.brighter.commandprocessor;
-using TodoBackend.Core.BrighterFix;
+using paramore.brighter.commandprocessor.logging.Attributes;
 using TodoBackend.Core.Domain;
 using TodoBackend.Core.Ports.Commands.Messages;
 
@@ -16,19 +16,19 @@ namespace TodoBackend.Core.Ports.Commands.Handlers
             _unitOfWorkManager = unitOfWorkManager;
         }
 
-        [RequestLoggingAsync2(1, HandlerTiming.Before)]
-        public override async Task<DeleteTodo> HandleAsync(DeleteTodo command, CancellationToken? ct = null)
+        [RequestLoggingAsync(1, HandlerTiming.Before)]
+        public override async Task<DeleteTodo> HandleAsync(DeleteTodo command, CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var uow = _unitOfWorkManager.Start())
-            using (var tx = await uow.BeginTransactionAsync(cancellationToken: ct ?? default(CancellationToken)))
+            using (var tx = await uow.BeginTransactionAsync(cancellationToken: cancellationToken).ConfigureAwait(ContinueOnCapturedContext))
             {
-                var todo = await uow.GetAsync<Todo>(command.TodoId, ct ?? default(CancellationToken));
+                var todo = await uow.GetAsync<Todo>(command.TodoId, cancellationToken).ConfigureAwait(ContinueOnCapturedContext);
                 uow.Delete(todo);
 
-                await tx.CommitAsync(ct ?? default(CancellationToken));
+                await tx.CommitAsync(cancellationToken).ConfigureAwait(ContinueOnCapturedContext);
             }
 
-            return await base.HandleAsync(command, ct);
+            return await base.HandleAsync(command, cancellationToken).ConfigureAwait(ContinueOnCapturedContext);
         }
     }
 }

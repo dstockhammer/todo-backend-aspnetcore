@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using paramore.brighter.commandprocessor;
+using paramore.brighter.commandprocessor.logging.Handlers;
+using paramore.brighter.commandprocessor.policy.Handlers;
 using SimpleInjector;
 
 namespace TodoBackend.Api.Infrastructure
@@ -23,11 +25,10 @@ namespace TodoBackend.Api.Infrastructure
 
         public void RegisterDefaultHandlers()
         {
-            // see https://simpleinjector.readthedocs.io/en/latest/decisions.html#one-constructor
-            //_container.Register(typeof(RequestLoggingHandler<>));
-            //_container.Register(typeof(ExceptionPolicyHandler<>));
-            //_container.Register(typeof(RequestLoggingHandlerRequestHandlerAsync<>));
-            //_container.Register(typeof(ExceptionPolicyHandlerAsync<>));
+            _container.Register(typeof(RequestLoggingHandler<>));
+            _container.Register(typeof(ExceptionPolicyHandler<>));
+            _container.Register(typeof(RequestLoggingHandlerAsync<>));
+            _container.Register(typeof(ExceptionPolicyHandlerAsync<>));
         }
 
         public void RegisterSubscribersFromAssembly(Assembly assembly)

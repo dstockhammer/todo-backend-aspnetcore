@@ -3,7 +3,7 @@ using TodoBackend.Core.Domain;
 
 namespace TodoBackend.Core.Ports.Queries.Messages
 {
-    public sealed class GetTodo : IQueryRequest<GetTodo.Result>
+    public sealed class GetTodo : IQueryRequest<GetTodo.Response>
     {
         public int TodoId { get; }
 
@@ -12,11 +12,11 @@ namespace TodoBackend.Core.Ports.Queries.Messages
             TodoId = todoId;
         }
 
-        public sealed class Result : IQueryResponse
+        public sealed class Response : IQueryResponse
         {
             public Todo Todo { get; }
 
-            public Result(Todo todo)
+            public Response(Todo todo)
             {
                 Todo = todo;
             }

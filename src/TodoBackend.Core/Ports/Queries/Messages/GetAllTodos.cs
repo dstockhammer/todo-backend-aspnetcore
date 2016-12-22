@@ -4,13 +4,13 @@ using TodoBackend.Core.Domain;
 
 namespace TodoBackend.Core.Ports.Queries.Messages
 {
-    public sealed class GetAllTodos : IQueryRequest<GetAllTodos.Result>
+    public sealed class GetAllTodos : IQueryRequest<GetAllTodos.Response>
     {
-        public sealed class Result : IQueryResponse
+        public sealed class Response : IQueryResponse
         {
             public IEnumerable<Todo> Todos { get; }
 
-            public Result(IEnumerable<Todo> todos)
+            public Response(IEnumerable<Todo> todos)
             {
                 Todos = todos;
             }

@@ -5,7 +5,7 @@
     "Darker": "0.6.0",
     "Microsoft.EntityFrameworkCore": "1.1.0",
     "NETStandard.Library": "1.6.1",
-    "paramore.brighter.commandprocessor": "7.0.63-beta",
+    "paramore.brighter.commandprocessor": "7.0.70-beta",
     "Serilog": "2.4.0-dev-00767",
     "System.Data.Common": "4.3.0"
   },

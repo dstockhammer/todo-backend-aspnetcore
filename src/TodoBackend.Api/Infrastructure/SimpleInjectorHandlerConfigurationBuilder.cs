@@ -25,7 +25,7 @@ namespace TodoBackend.Api.Infrastructure
                 let ti = t.GetTypeInfo()
                 where ti.IsClass && !ti.IsAbstract && !ti.IsInterface
                 from i in t.GetInterfaces()
-                where i.GetTypeInfo().IsGenericType && (i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>))
+                where i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>)
                 select new { Request = i.GetGenericArguments().First(), ResponseType = i.GetGenericArguments().ElementAt(1), Handler = t };
 
             foreach (var subscriber in subscribers)

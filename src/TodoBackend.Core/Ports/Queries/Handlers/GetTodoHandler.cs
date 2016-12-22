@@ -7,7 +7,7 @@ using TodoBackend.Core.Ports.Queries.Messages;
 
 namespace TodoBackend.Core.Ports.Queries.Handlers
 {
-    public sealed class GetTodoHandler : AsyncQueryHandler<GetTodo, GetTodo.Result>
+    public sealed class GetTodoHandler : AsyncQueryHandler<GetTodo, GetTodo.Response>
     {
         private readonly IUnitOfWorkManager _unitOfWorkManager;
 
@@ -17,12 +17,12 @@ namespace TodoBackend.Core.Ports.Queries.Handlers
         }
 
         [RequestLogging(1)]
-        public override async Task<GetTodo.Result> ExecuteAsync(GetTodo request, CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task<GetTodo.Response> ExecuteAsync(GetTodo request, CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var uow = _unitOfWorkManager.Start())
             {
-                var todo = await uow.GetAsync<Todo>(request.TodoId, cancellationToken);
-                return new GetTodo.Result(todo);
+                var todo = await uow.GetAsync<Todo>(request.TodoId, cancellationToken).ConfigureAwait(false);
+                return new GetTodo.Response(todo);
             }
         }
     }

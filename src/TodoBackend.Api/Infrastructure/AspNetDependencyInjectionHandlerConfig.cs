@@ -27,8 +27,7 @@ namespace TodoBackend.Api.Infrastructure
         {
             _services.AddTransient(typeof(RequestLoggingHandler<>));
             _services.AddTransient(typeof(ExceptionPolicyHandler<>));
-
-            _services.AddTransient(typeof(RequestLoggingHandlerRequestHandlerAsync<>));
+            _services.AddTransient(typeof(RequestLoggingHandlerAsync<>));
             _services.AddTransient(typeof(ExceptionPolicyHandlerAsync<>));
         }
 
@@ -39,7 +38,7 @@ namespace TodoBackend.Api.Infrastructure
                 let ti = t.GetTypeInfo()
                 where ti.IsClass && !ti.IsAbstract && !ti.IsInterface
                 from i in t.GetInterfaces()
-                where i.GetTypeInfo().IsGenericType && (i.GetGenericTypeDefinition() == typeof(IHandleRequestsAsync<>))
+                where i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IHandleRequestsAsync<>)
                 select new { Request = i.GetGenericArguments().First(), Handler = t };
 
             foreach (var subscriber in subscribers)

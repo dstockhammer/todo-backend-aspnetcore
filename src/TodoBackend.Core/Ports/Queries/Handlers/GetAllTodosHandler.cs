@@ -8,7 +8,7 @@ using TodoBackend.Core.Ports.Queries.Messages;
 
 namespace TodoBackend.Core.Ports.Queries.Handlers
 {
-    public sealed class GetAllTodosHandler : AsyncQueryHandler<GetAllTodos, GetAllTodos.Result>
+    public sealed class GetAllTodosHandler : AsyncQueryHandler<GetAllTodos, GetAllTodos.Response>
     {
         private readonly IUnitOfWorkManager _unitOfWorkManager;
 
@@ -18,14 +18,12 @@ namespace TodoBackend.Core.Ports.Queries.Handlers
         }
 
         [RequestLogging(1)]
-        public override async Task<GetAllTodos.Result> ExecuteAsync(GetAllTodos request, CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task<GetAllTodos.Response> ExecuteAsync(GetAllTodos request, CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var uow = _unitOfWorkManager.Start())
             {
-                //await Task.Delay(5000, cancellationToken);
-
-                var todos = await uow.AsQueryable<Todo>().ToListAsync(cancellationToken);
-                return new GetAllTodos.Result(todos);
+                var todos = await uow.AsQueryable<Todo>().ToListAsync(cancellationToken).ConfigureAwait(false);
+                return new GetAllTodos.Response(todos);
             }
         }
     }

@@ -26,7 +26,7 @@ namespace TodoBackend.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(CancellationToken cancellationToken = default(CancellationToken))
         {
-            var result = await _queryProcessor.ExecuteAsync(new GetAllTodos(), cancellationToken);
+            var result = await _queryProcessor.ExecuteAsync(new GetAllTodos(), cancellationToken).ConfigureAwait(false);
 
             var views = result.Todos.Select(t => new TodoView
             {
@@ -43,7 +43,7 @@ namespace TodoBackend.Api.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var result = await _queryProcessor.ExecuteAsync(new GetTodo(id), cancellationToken);
+            var result = await _queryProcessor.ExecuteAsync(new GetTodo(id), cancellationToken).ConfigureAwait(false);
             if (result.Todo == null)
                 return NotFound();
 
@@ -63,7 +63,7 @@ namespace TodoBackend.Api.Controllers
         public async Task<IActionResult> Post([FromBody]TodoView view, CancellationToken cancellationToken = default(CancellationToken))
         {
             var id = Math.Abs(Guid.NewGuid().GetHashCode());
-            await _commandProcessor.SendAsync(new CreateTodo(id, view.Title, view.Completed, view.Order), ct: cancellationToken);
+            await _commandProcessor.SendAsync(new CreateTodo(id, view.Title, view.Completed, view.Order), false, cancellationToken).ConfigureAwait(false);
 
             // todo: yeah, this is a hack
             view.Id = id;
@@ -77,7 +77,7 @@ namespace TodoBackend.Api.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> Patch(int id, [FromBody]TodoView view, CancellationToken cancellationToken = default(CancellationToken))
         {
-            await _commandProcessor.SendAsync(new UpdateTodo(id, view.Title, view.Completed, view.Order), ct: cancellationToken);
+            await _commandProcessor.SendAsync(new UpdateTodo(id, view.Title, view.Completed, view.Order), false, cancellationToken).ConfigureAwait(false);
 
             // todo: yeah, this is a hack
             view.Id = id;
@@ -89,7 +89,7 @@ namespace TodoBackend.Api.Controllers
         [HttpDelete]
         public async Task<IActionResult> Delete(CancellationToken cancellationToken = default(CancellationToken))
         {
-            await _commandProcessor.SendAsync(new DeleteAllTodos(), ct: cancellationToken);
+            await _commandProcessor.SendAsync(new DeleteAllTodos(), false, cancellationToken).ConfigureAwait(false);
 
             return Ok();
         }
@@ -97,7 +97,7 @@ namespace TodoBackend.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default(CancellationToken))
         {
-            await _commandProcessor.SendAsync(new DeleteTodo(id), ct: cancellationToken);
+            await _commandProcessor.SendAsync(new DeleteTodo(id), false, cancellationToken).ConfigureAwait(false);
 
             return Ok();
         }
