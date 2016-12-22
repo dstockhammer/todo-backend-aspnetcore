@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Darker;
 using Darker.Builder;
+using Darker.Serialization.NewtonsoftJson;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -134,6 +135,7 @@ namespace TodoBackend.Api
                 .Handlers(handlerConfiguration)
                 .DefaultPolicies()
                 .InMemoryRequestContextFactory()
+                .NewtonsoftJsonSerializer()
                 .Build();
 
             _container.RegisterSingleton<IQueryProcessor>(queryProcessor);
