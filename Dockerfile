@@ -1,7 +1,8 @@
 FROM microsoft/dotnet:latest
 
 COPY . /app
-WORKDIR /app
+
+WORKDIR /app/src/TodoBackend.Api
 
 RUN dotnet restore
 RUN dotnet build
