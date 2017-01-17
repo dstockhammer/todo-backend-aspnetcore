@@ -40,7 +40,7 @@ namespace TodoBackend.Api
                 .AddEnvironmentVariables()
                 .Build();
 
-            _connectionString = @"Server=localhost;Database=TodoBackend;User Id=TodoBackendOwner;Password=P@ssword1;";
+            _connectionString = @"Server=sqlserver;Database=TodoBackend;User Id=sa;Password=P@ssword1;";
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -84,6 +84,21 @@ namespace TodoBackend.Api
 
             app.UseCors(opts => opts.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             app.UseMvc();
+
+            EnsureDatabaseCreated();
+        }
+
+        // hack
+        private void EnsureDatabaseCreated()
+        {
+            var dbopts = new DbContextOptionsBuilder<TodoContext>()
+                .UseSqlServer(_connectionString)
+                .Options;
+
+            using (var ctx = new TodoContext(dbopts))
+            {
+                ctx.Database.EnsureCreated();
+            }
         }
 
         private void InitializeContainer(IApplicationBuilder app, ILoggerFactory loggerFactory)

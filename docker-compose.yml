@@ -1,16 +1,26 @@
 version: '2'
 
 services:
+  sqlserver:
+    image: microsoft/mssql-server-linux
+    ports:
+      - 1433
+    volumes:
+      - /opt/mssql/data:/opt/mssql/data
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=P@ssword1
+
   api:
     image: todobackend-api
     build:
-      context: ./src/TodoBackend.Api
+      context: .
     environment:
       SERVICE_NAME: api
     ports:
-      - "5000"
+      - 5000
     links:
-      - elk
+      - sqlserver
 
   loadbalancer:
     image: nginx
@@ -19,7 +29,7 @@ services:
     depends_on:
       - api
     ports:
-      - "80:80"
+      - "8080:80"
 
   consul:
     image: consul
@@ -36,10 +46,3 @@ services:
     command: -internal -resync 600 consul://consul:8500
     volumes:
       - "/var/run/docker.sock:/tmp/docker.sock"
-
-  elk:
-    image: sebp/elk
-    ports:
-      - "5601:5601"
-      - "9200:9200"
-      - "5044:5044"
