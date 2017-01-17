@@ -30,17 +30,16 @@ namespace TodoBackend.Api
     {
         private readonly Container _container;
         private readonly IConfigurationRoot _configuration;
-        private readonly string _connectionString;
 
         public Startup(IHostingEnvironment env)
         {
             _container = new Container();
             _configuration = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appSettings.json", optional: false)
+                .AddJsonFile($"appSettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables()
                 .Build();
-
-            _connectionString = @"Server=sqlserver;Database=TodoBackend;User Id=sa;Password=P@ssword1;";
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -49,12 +48,8 @@ namespace TodoBackend.Api
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
                 .WriteTo.LiterateConsole()
-                .WriteTo.Seq("http://localhost:5341")
                 .Enrich.WithMachineName()
                 .CreateLogger();
-
-            // required for migration
-            services.AddDbContext<TodoContext>(opt => opt.UseSqlServer(_connectionString));
 
             services.AddCors();
             services.AddMvcCore()
@@ -92,7 +87,7 @@ namespace TodoBackend.Api
         private void EnsureDatabaseCreated()
         {
             var dbopts = new DbContextOptionsBuilder<TodoContext>()
-                .UseSqlServer(_connectionString)
+                .UseSqlServer(_configuration.GetConnectionString("SqlServer"))
                 .Options;
 
             using (var ctx = new TodoContext(dbopts))
@@ -110,9 +105,11 @@ namespace TodoBackend.Api
             _container.RegisterMvcControllers(app);
             _container.RegisterSingleton(Log.Logger);
 
+            _container.RegisterSingleton<IConfiguration>(_configuration);
+
             _container.RegisterSingleton(
                 new DbContextOptionsBuilder<TodoContext>()
-                .UseSqlServer(_connectionString)
+                .UseSqlServer(_configuration.GetConnectionString("SqlServer"))
                 .UseLoggerFactory(loggerFactory)
                 .Options);
 

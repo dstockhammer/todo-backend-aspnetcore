@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Darker;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using paramore.brighter.commandprocessor;
 using TodoBackend.Api.Views;
 using TodoBackend.Core.Ports.Commands.Messages;
@@ -16,11 +17,13 @@ namespace TodoBackend.Api.Controllers
     {
         private readonly IAmACommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
+        private readonly IConfiguration _configuration;
 
-        public TodoController(IAmACommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public TodoController(IAmACommandProcessor commandProcessor, IQueryProcessor queryProcessor, IConfiguration configuration)
         {
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -34,7 +37,7 @@ namespace TodoBackend.Api.Controllers
                 Title = t.Title,
                 Completed = t.Completed,
                 Order = t.Order,
-                Url = GetUri(t.Id)
+                Url = GetTodoUri(t.Id)
             });
 
             return Ok(views);
@@ -53,7 +56,7 @@ namespace TodoBackend.Api.Controllers
                 Title = result.Todo.Title,
                 Completed = result.Todo.Completed,
                 Order = result.Todo.Order,
-                Url = GetUri(result.Todo.Id)
+                Url = GetTodoUri(result.Todo.Id)
             };
 
             return Ok(view);
@@ -67,7 +70,7 @@ namespace TodoBackend.Api.Controllers
 
             // todo: yeah, this is a hack
             view.Id = id;
-            view.Url = GetUri(id);
+            view.Url = GetTodoUri(id);
 
             HttpContext.Response.Headers.Add("Location", view.Url);
 
@@ -81,7 +84,7 @@ namespace TodoBackend.Api.Controllers
 
             // todo: yeah, this is a hack
             view.Id = id;
-            view.Url = GetUri(id);
+            view.Url = GetTodoUri(id);
 
             return Ok(view);
         }
@@ -102,19 +105,6 @@ namespace TodoBackend.Api.Controllers
             return Ok();
         }
 
-        private string GetUri(int id)
-        {
-            var hostAndPort = HttpContext.Request.Host.Value.Split(':');
-
-            var builder = new UriBuilder
-            {
-                Scheme = HttpContext.Request.Scheme,
-                Host = hostAndPort.First(),
-                Port = hostAndPort.Length == 1 ? 80 : int.Parse(hostAndPort.ElementAt(1)),
-                Path = id.ToString()
-            };
-
-            return builder.Uri.ToString();
-        }
+        private string GetTodoUri(int id) => $"{_configuration["Uris:Api"]}/{id}";
     }
 }

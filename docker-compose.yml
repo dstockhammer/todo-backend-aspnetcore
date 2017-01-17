@@ -16,7 +16,8 @@ services:
     build:
       context: .
     environment:
-      SERVICE_NAME: api
+      - SERVICE_NAME=api
+      - ASPNETCORE_ENVIRONMENT=docker
     ports:
       - 5000
     links:

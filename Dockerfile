@@ -4,7 +4,7 @@ COPY . /app
 WORKDIR /app
 
 RUN dotnet restore
-RUN dotnet publish src/TodoBackend.Api/TodoBackend.Api.csproj -c Release -o ../../bin 
+RUN dotnet publish src/TodoBackend.Api/TodoBackend.Api.csproj -c Release -o ../../bin
 
 EXPOSE 5000
 
