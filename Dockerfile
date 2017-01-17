@@ -1,12 +1,11 @@
-FROM microsoft/dotnet:1.1-sdk-msbuild
+FROM dotnet:1.1.0-sdk-msbuild-preview4
 
 COPY . /app
-
-WORKDIR /app/src/TodoBackend.Api
+WORKDIR /app
 
 RUN dotnet restore
-RUN dotnet build
+RUN dotnet publish src/TodoBackend.Api/TodoBackend.Api.csproj -c Release -o ../../bin 
 
-EXPOSE 5000/tcp
+EXPOSE 5000
 
-CMD dotnet run --server.urls http://*:5000
+ENTRYPOINT [ "dotnet", "bin/TodoBackend.Api.dll" ] 
