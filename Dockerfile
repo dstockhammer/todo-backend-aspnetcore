@@ -1,4 +1,4 @@
-FROM dotnet:1.1.0-sdk-msbuild-preview4
+FROM microsoft/dotnet:1.1.0-sdk-msbuild-rc3
 
 COPY . /app
 WORKDIR /app
