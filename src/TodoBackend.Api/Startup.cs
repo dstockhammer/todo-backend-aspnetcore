@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
-using Darker;
 using Darker.Builder;
-using Darker.Serialization.NewtonsoftJson;
+using Darker.RequestLogging;
+using Darker.SimpleInjector;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -131,7 +131,7 @@ namespace TodoBackend.Api
                 .Handlers(config.HandlerConfiguration)
                 .DefaultPolicy()
                 .NoTaskQueues()
-                .RequestContextFactory(new paramore.brighter.commandprocessor.InMemoryRequestContextFactory())
+                .RequestContextFactory(new InMemoryRequestContextFactory())
                 .Build();
 
             _container.RegisterSingleton<IAmACommandProcessor>(commandProcessor);
@@ -139,18 +139,14 @@ namespace TodoBackend.Api
 
         private void ConfigureDarker()
         {
-            var handlerConfiguration = new SimpleInjectorHandlerConfigurationBuilder(_container)
-                .WithQueriesAndHandlersFromAssembly(typeof(GetTodoHandler).GetTypeInfo().Assembly)
-                .Build();
-
             var queryProcessor = QueryProcessorBuilder.With()
-                .Handlers(handlerConfiguration)
-                .DefaultPolicies()
+                .SimpleInjectorHandlers(_container, opts => opts
+                    .WithQueriesAndHandlersFromAssembly(typeof(GetTodoHandler).GetTypeInfo().Assembly))
                 .InMemoryRequestContextFactory()
-                .NewtonsoftJsonSerializer()
+                .JsonRequestLogging()
                 .Build();
 
-            _container.RegisterSingleton<IQueryProcessor>(queryProcessor);
+            _container.RegisterSingleton(queryProcessor);
         }
     }
 }
