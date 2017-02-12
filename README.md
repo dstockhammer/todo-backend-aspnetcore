@@ -24,7 +24,7 @@ This is an implementation of the [Todo-Backend](http://todobackend.com) API in C
   * API: [http://localhost](http://localhost)
   * Kibana (ELK): [http://localhost:5601/app/kibana#/discover/Default](http://localhost:5601/app/kibana#/discover/Default])
   * Consul UI: [http://localhost:8500/ui](http://localhost:8500/ui)
-  
+
 * Azure (full stack on one VM)
   * API: [http://todo-backend-aspnetcore.westeurope.cloudapp.azure.com](http://todo-backend-aspnetcore.westeurope.cloudapp.azure.com/)
   * Kibana (ELK): [http://localhost:5601/app/kibana#/discover/Default](http://localhost:5601/app/kibana#/discover/Default])
@@ -80,7 +80,7 @@ $ docker-machine ip machine
 ```
 ops@machine:~$ sysctl -w vm.max_map_count=262144
 ```
- 
+
 * Set the newly created machine as default. This makes all `docker` commands go to the machine in Azure
 ```
 $ docker-machine env machine
@@ -124,7 +124,7 @@ $ azure network public-ip create -g docker-machine -n machine-ip -l westeurope -
 
 ```
 $ cd src/TodoBackend.Api/
-$ docker build -t todo-backend-aspnetcore:latest -f Dockerfile.heroku .
+$ docker build -t todo-backend-aspnetcore:latest -f Dockerfile.heroku -e ASPNETCORE_ENVIRONMENT=heroku .
 $ docker tag todo-backend-aspnetcore registry.heroku.com/todo-backend-aspnetcore/web
 $ docker push registry.heroku.com/todo-backend-aspnetcore/web
 $ heroku open --app todo-backend-aspnetcore

@@ -5,7 +5,7 @@ using TodoBackend.Core.Domain;
 
 namespace TodoBackend.Api.Data
 {
-    public sealed class EfTransaction : ITransaction
+    internal sealed class EfTransaction : ITransaction
     {
         private readonly TodoContext _context;
         private readonly IDbContextTransaction _transaction;

@@ -3,7 +3,7 @@ using TodoBackend.Core.Domain;
 
 namespace TodoBackend.Api.Data
 {
-    public sealed class EfUnitOfWorkManager : IUnitOfWorkManager
+    internal sealed class EfUnitOfWorkManager : IUnitOfWorkManager
     {
         private readonly DbContextOptions<TodoContext> _options;
 

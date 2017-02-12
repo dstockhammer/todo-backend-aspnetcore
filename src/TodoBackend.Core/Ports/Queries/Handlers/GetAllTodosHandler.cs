@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Darker;
 using Darker.RequestLogging;
-using Microsoft.EntityFrameworkCore;
 using TodoBackend.Core.Domain;
 using TodoBackend.Core.Ports.Queries.Messages;
 
@@ -23,7 +22,7 @@ namespace TodoBackend.Core.Ports.Queries.Handlers
         {
             using (var uow = _unitOfWorkManager.Start())
             {
-                return await uow.AsQueryable<Todo>().ToListAsync(cancellationToken).ConfigureAwait(false);
+                return await uow.GetAllAsync<Todo>(cancellationToken).ConfigureAwait(false);
             }
         }
     }

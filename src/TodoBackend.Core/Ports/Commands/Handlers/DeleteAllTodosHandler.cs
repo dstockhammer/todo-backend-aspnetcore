@@ -1,6 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using paramore.brighter.commandprocessor;
 using paramore.brighter.commandprocessor.logging.Attributes;
 using TodoBackend.Core.Domain;
@@ -23,7 +22,7 @@ namespace TodoBackend.Core.Ports.Commands.Handlers
             using (var uow = _unitOfWorkManager.Start())
             using (var tx = await uow.BeginTransactionAsync(cancellationToken: cancellationToken).ConfigureAwait(ContinueOnCapturedContext))
             {
-                var todos = await uow.AsQueryable<Todo>().ToListAsync(cancellationToken).ConfigureAwait(ContinueOnCapturedContext);
+                var todos = await uow.GetAllAsync<Todo>(cancellationToken).ConfigureAwait(ContinueOnCapturedContext);
 
                 foreach (var todo in todos)
                 {

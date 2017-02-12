@@ -86,6 +86,9 @@ namespace TodoBackend.Api
         // hack
         private void EnsureDatabaseCreated()
         {
+            if (_configuration["DataStore"] != "SqlServer")
+                return;
+
             var dbopts = new DbContextOptionsBuilder<TodoContext>()
                 .UseSqlServer(_configuration.GetConnectionString("SqlServer"))
                 .Options;
@@ -107,13 +110,20 @@ namespace TodoBackend.Api
 
             _container.RegisterSingleton<IConfiguration>(_configuration);
 
-            _container.RegisterSingleton(
-                new DbContextOptionsBuilder<TodoContext>()
-                .UseSqlServer(_configuration.GetConnectionString("SqlServer"))
-                .UseLoggerFactory(loggerFactory)
-                .Options);
+            if (_configuration["DataStore"] == "SqlServer")
+            {
+                _container.RegisterSingleton(
+                    new DbContextOptionsBuilder<TodoContext>()
+                        .UseSqlServer(_configuration.GetConnectionString("SqlServer"))
+                        .UseLoggerFactory(loggerFactory)
+                        .Options);
 
-            _container.Register<IUnitOfWorkManager, EfUnitOfWorkManager>();
+                _container.Register<IUnitOfWorkManager, EfUnitOfWorkManager>();
+            }
+            else
+            {
+                _container.Register<IUnitOfWorkManager, InMemoryUnitOfWorkManager>();
+            }
 
             ConfigureBrighter();
             ConfigureDarker();
