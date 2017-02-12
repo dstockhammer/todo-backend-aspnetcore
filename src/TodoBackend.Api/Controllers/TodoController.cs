@@ -29,9 +29,9 @@ namespace TodoBackend.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(CancellationToken cancellationToken = default(CancellationToken))
         {
-            var result = await _queryProcessor.ExecuteAsync(new GetAllTodos(), cancellationToken).ConfigureAwait(false);
+            var todos = await _queryProcessor.ExecuteAsync(new GetAllTodos(), cancellationToken).ConfigureAwait(false);
 
-            var views = result.Todos.Select(t => new TodoView
+            var views = todos.Select(t => new TodoView
             {
                 Id = t.Id,
                 Title = t.Title,
@@ -46,17 +46,17 @@ namespace TodoBackend.Api.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var result = await _queryProcessor.ExecuteAsync(new GetTodo(id), cancellationToken).ConfigureAwait(false);
-            if (result.Todo == null)
+            var todo = await _queryProcessor.ExecuteAsync(new GetTodo(id), cancellationToken).ConfigureAwait(false);
+            if (todo == null)
                 return NotFound();
 
             var view = new TodoView
             {
-                Id = result.Todo.Id,
-                Title = result.Todo.Title,
-                Completed = result.Todo.Completed,
-                Order = result.Todo.Order,
-                Url = GetTodoUri(result.Todo.Id)
+                Id = todo.Id,
+                Title = todo.Title,
+                Completed = todo.Completed,
+                Order = todo.Order,
+                Url = GetTodoUri(todo.Id)
             };
 
             return Ok(view);

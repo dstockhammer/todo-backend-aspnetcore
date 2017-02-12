@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Darker;
@@ -8,7 +9,7 @@ using TodoBackend.Core.Ports.Queries.Messages;
 
 namespace TodoBackend.Core.Ports.Queries.Handlers
 {
-    public sealed class GetAllTodosHandler : AsyncQueryHandler<GetAllTodos, GetAllTodos.Response>
+    public sealed class GetAllTodosHandler : AsyncQueryHandler<GetAllTodos, IEnumerable<Todo>>
     {
         private readonly IUnitOfWorkManager _unitOfWorkManager;
 
@@ -18,12 +19,11 @@ namespace TodoBackend.Core.Ports.Queries.Handlers
         }
 
         [RequestLogging(1)]
-        public override async Task<GetAllTodos.Response> ExecuteAsync(GetAllTodos request, CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task<IEnumerable<Todo>> ExecuteAsync(GetAllTodos request, CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var uow = _unitOfWorkManager.Start())
             {
-                var todos = await uow.AsQueryable<Todo>().ToListAsync(cancellationToken).ConfigureAwait(false);
-                return new GetAllTodos.Response(todos);
+                return await uow.AsQueryable<Todo>().ToListAsync(cancellationToken).ConfigureAwait(false);
             }
         }
     }

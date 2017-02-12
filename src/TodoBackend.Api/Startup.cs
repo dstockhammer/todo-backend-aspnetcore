@@ -142,7 +142,7 @@ namespace TodoBackend.Api
             var queryProcessor = QueryProcessorBuilder.With()
                 .SimpleInjectorHandlers(_container, opts => opts
                     .WithQueriesAndHandlersFromAssembly(typeof(GetTodoHandler).GetTypeInfo().Assembly))
-                .InMemoryRequestContextFactory()
+                .InMemoryQueryContextFactory()
                 .JsonRequestLogging()
                 .Build();
 
