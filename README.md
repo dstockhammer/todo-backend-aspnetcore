@@ -20,10 +20,10 @@ This is an implementation of the [Todo-Backend](http://todobackend.com) API in C
 ```
 
 ## URIs
-* Local (full stack on one VM)
-  * API: [http://localhost](http://localhost)
-  * Kibana (ELK): [http://localhost:5601/app/kibana#/discover/Default](http://localhost:5601/app/kibana#/discover/Default])
+* Local Docker (full stack on one VM)
+  * API: [http://localhost:8080](http://localhost:8080)
   * Consul UI: [http://localhost:8500/ui](http://localhost:8500/ui)
+  * Run ToDo Backend tests [http://todobackend.com/specs/index.html?http://localhost:8080](http://todobackend.com/specs/index.html?http://localhost:8080)
 
 * Azure (full stack on one VM)
   * API: [http://todo-backend-aspnetcore.westeurope.cloudapp.azure.com](http://todo-backend-aspnetcore.westeurope.cloudapp.azure.com/)
