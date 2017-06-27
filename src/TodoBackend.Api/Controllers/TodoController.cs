@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Darker;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using paramore.brighter.commandprocessor;
+using Paramore.Brighter;
 using TodoBackend.Api.Views;
 using TodoBackend.Core.Ports.Commands.Messages;
 using TodoBackend.Core.Ports.Queries.Messages;

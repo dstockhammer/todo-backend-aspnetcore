@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using paramore.brighter.commandprocessor;
-using paramore.brighter.commandprocessor.logging.Handlers;
-using paramore.brighter.commandprocessor.policy.Handlers;
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Handlers;
+using Paramore.Brighter.Policies.Handlers;
 using SimpleInjector;
 
 namespace TodoBackend.Api.Infrastructure

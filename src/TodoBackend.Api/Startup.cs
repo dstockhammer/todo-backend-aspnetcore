@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-using paramore.brighter.commandprocessor;
+using Paramore.Brighter;
 using Serilog;
 using TodoBackend.Api.Infrastructure;
 using TodoBackend.Core.Ports.Commands.Handlers;
@@ -21,6 +21,7 @@ using TodoBackend.Core.Ports.Queries.Handlers;
 using SimpleInjector;
 using SimpleInjector.Integration.AspNetCore;
 using SimpleInjector.Integration.AspNetCore.Mvc;
+using SimpleInjector.Lifestyles;
 using TodoBackend.Api.Data;
 using TodoBackend.Core.Domain;
 
@@ -61,8 +62,10 @@ namespace TodoBackend.Api
                     opt.NullValueHandling = NullValueHandling.Ignore;
                 });
 
+
             services.AddSingleton<IControllerActivator>(new SimpleInjectorControllerActivator(_container));
             services.AddSingleton<IViewComponentActivator>(new SimpleInjectorViewComponentActivator(_container));
+            services.UseSimpleInjectorAspNetRequestScoping(_container);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -71,6 +74,8 @@ namespace TodoBackend.Api
             loggerFactory.AddSerilog(Log.Logger);
 
             InitializeContainer(app, loggerFactory);
+
+            _container.Verify();
 
             if (env.IsDevelopment())
             {
@@ -101,9 +106,7 @@ namespace TodoBackend.Api
 
         private void InitializeContainer(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
-            app.UseSimpleInjectorAspNetRequestScoping(_container);
-
-            _container.Options.DefaultScopedLifestyle = new AspNetRequestLifestyle();
+            _container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
 
             _container.RegisterMvcControllers(app);
             _container.RegisterSingleton(Log.Logger);
@@ -127,8 +130,6 @@ namespace TodoBackend.Api
 
             ConfigureBrighter();
             ConfigureDarker();
-
-            _container.Verify();
         }
 
         private void ConfigureBrighter()

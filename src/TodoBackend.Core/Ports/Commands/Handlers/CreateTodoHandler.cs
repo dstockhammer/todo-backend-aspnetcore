@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using paramore.brighter.commandprocessor;
-using paramore.brighter.commandprocessor.logging.Attributes;
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
 using TodoBackend.Core.Domain;
 using TodoBackend.Core.Ports.Commands.Messages;
 
